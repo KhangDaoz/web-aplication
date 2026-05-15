@@ -12,6 +12,7 @@ import {
 import NoMatch from "./NoMatch";
 import Home from "./Home";
 import { Posts, PostLists, Post, NewPost} from "./Posts";
+import { News, NewsLists, NewsItem, NewNews } from "./News";
 import { About } from "./About";
 import Login from "./Login";
 import Stats from "./Stats";
@@ -35,10 +36,12 @@ function AppLayout() {
             <nav>
                 <Link to="/" style={{paddingRight: 5}}>Home</Link>
                 <Link to="/posts" style={{paddingRight: 5}}>Posts</Link>
+                <Link to="/news" style={{paddingRight: 5}}>News</Link>
                 <Link to="/about" style={{paddingRight: 5}}>About</Link>
                 <span> | </span>
                 {user && <Link to="/stats" style={{paddingRight: 5}}>Stats</Link>}
                 {user && <Link to="/newpost" style={{paddingRight: 5}}>New Post</Link>}
+                {user && <Link to="/newnews" style={{paddingRight: 5}}>New News</Link>}
                 {!user && <Link to="/login" style={{paddingRight: 5}}>Login</Link>}
                 {user &&  <span onClick={logOut} style={{cursor: "pointer", paddingLeft: 5}}>Logout</span>}
             </nav>
@@ -49,10 +52,15 @@ function AppLayout() {
                     <Route index element={<PostLists />} />
                     <Route path=":slug" element={<Post user={user}/>} />
                 </Route>
+                <Route path="/news" element={<News />} >
+                    <Route index element={<NewsLists />} />
+                    <Route path=":slug" element={<NewsItem />} />
+                </Route>
                 <Route path="/about" element={<About/>} />
                 <Route path="/login" element={<Login onLogin={setUser}/>} />
                 <Route path="/stats" element={<ProtectedRoute user={user}><Stats user={user}/></ProtectedRoute>} />
                 <Route path="/newpost" element={<ProtectedRoute user={user}><NewPost/></ProtectedRoute>} />
+                <Route path="/newnews" element={<ProtectedRoute user={user}><NewNews/></ProtectedRoute>} />
                 <Route path="*" element={<NoMatch />} />
             </Routes>
         </div>
