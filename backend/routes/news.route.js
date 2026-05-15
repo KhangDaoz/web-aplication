@@ -16,7 +16,7 @@ router.post('/news', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/newses', verifyToken, async (req, res) => {
+router.get('/news', verifyToken, async (req, res) => {
   try {
     const newses = await News.find({});
     res.json(newses);

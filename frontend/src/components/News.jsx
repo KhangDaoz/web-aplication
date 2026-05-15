@@ -21,7 +21,7 @@ function NewsLists() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/newses`, {
+        const response = await fetch(`${API_URL}/api/news`, {
           headers: {
             "Accept": "application/json",
             "Content-Type": "application/json",
