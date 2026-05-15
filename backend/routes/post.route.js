@@ -43,8 +43,7 @@ router.patch('/post/:slug', async (req, res) => {
   try {
     const post = await Post.findOneAndUpdate(
       {slug: req.params.slug}, 
-      req.body,
-      {new: true}
+      req.body
     );
     res.json(post);
   }

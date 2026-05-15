@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Outlet, useParams } from "react-router-dom";
+import { Link, Outlet, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 
 const API_URL = "http://localhost:5001";
@@ -60,6 +60,7 @@ function PostLists() {
 function Post({ user }) {
   const { slug } = useParams();
   const [post, setPost] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,6 +107,10 @@ function Post({ user }) {
     }
   }
 
+  const handleEditPost = () => {
+    navigate('/newpost', {state: {post}});
+  }
+
   const {title, description} = post;
   return (
     <div>
@@ -124,49 +129,73 @@ function Post({ user }) {
         <label>Text: <input type="text" name="text"></input></label>
         <button type="submit">Add comment</button>
       </form>
+
+      <button onClick={handleEditPost}>Edit post</button>
     </div>
   )
 }
 
 function NewPost() {
-  const [newPost, setNewPost] = useState("");
-  const {register, handleSubmit, formState: {errors}} = useForm();
+  const location = useLocation();
+  const editingPost = location.state?.post;
+  const [action, setAction] = useState("add");
+  const [status, setStatus] = useState("");
+  const {register, handleSubmit, formState: {errors}, setValue} = useForm();
+
+  useEffect(() => {
+    if (editingPost) {
+      setValue("slug", editingPost.slug);
+      setValue("title", editingPost.title);
+      setValue("description", editingPost.description);
+    }
+  }, [editingPost]);
+
   const onSubmit = async (data) => {
-    const post = JSON.stringify(data);
     try {
-      const response = await fetch(`${API_URL}/api/post`, {
-        method: "POST",
+      const endpoint = action === "update" 
+        ? `${API_URL}/api/post/${editingPost.slug}` 
+        : `${API_URL}/api/post`;
+      const method = action === "update" ? "PATCH" : "POST";
+      
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
-        body: post
+        body: JSON.stringify(data)
       });
+      
       if(response.ok) {
-        setNewPost("Post created successfully!");
+        setStatus(action === "update" 
+          ? "Post updated successfully!" 
+          : "Post created successfully!");
       }
     }
     catch (error) {
-      console.error("Error creating data:", error);
-      setNewPost("Post created failed!");
+      console.error("Error:", error);
+      setStatus("Operation failed!");
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <span>Slug:</span><br/>
-      <input type="text" {...register("slug", {required: true})} /><br/>
-      {errors.slug && <div style={{color: "red"}}>Slug is required</div>}
-      <span>Title:</span><br/>
-      <input type="text" {...register("title", {required: true})} /><br/>
-      {errors.title && <div style={{color: "red"}}>Title is required</div>}
-      <span>Description:</span><br/>
-      <input type="text" {...register("description", {required: true})} /><br/>
-      {errors.description && <div style={{color: "red"}}>Description is required</div>}
-      <button type="submit">Add new</button>
-      <p className="text-success">{newPost}</p>
-    </form>
+    <div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <span>Slug:</span><br/>
+        <input type="text" {...register("slug", {required: true})} /><br/>
+        {errors.slug && <div style={{color: "red"}}>Slug is required</div>}
+        <span>Title:</span><br/>
+        <input type="text" {...register("title", {required: true})} /><br/>
+        {errors.title && <div style={{color: "red"}}>Title is required</div>}
+        <span>Description:</span><br/>
+        <input type="text" {...register("description", {required: true})} /><br/>
+        {errors.description && <div style={{color: "red"}}>Description is required</div>}
+        <button type="submit" onClick={() => setAction("add")}>Add new</button>
+        <button type="submit" onClick={() => setAction("update")} disabled={!editingPost}>Update</button>
+        <p className="text-success">{status}</p>
+      </form>
+    </div>
   )
 }
 

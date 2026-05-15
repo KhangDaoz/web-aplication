@@ -20,7 +20,7 @@ import ProtectedRoute from "./ProtectedRoute";
 function AppLayout() {
     const [user, setUser] = useState(() => {
         const token = localStorage.getItem("token");
-        return token ? { username: "user" } : null;
+        return token ? { username: "khang" } : null;
     });
     const navigate = useNavigate();
 
@@ -51,7 +51,7 @@ function AppLayout() {
                 </Route>
                 <Route path="/about" element={<About/>} />
                 <Route path="/login" element={<Login onLogin={setUser}/>} />
-                <Route path="/stats" element={<ProtectedRoute user={user}><Stats/></ProtectedRoute>} />
+                <Route path="/stats" element={<ProtectedRoute user={user}><Stats user={user}/></ProtectedRoute>} />
                 <Route path="/newpost" element={<ProtectedRoute user={user}><NewPost/></ProtectedRoute>} />
                 <Route path="*" element={<NoMatch />} />
             </Routes>
