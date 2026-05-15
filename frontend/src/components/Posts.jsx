@@ -21,7 +21,13 @@ function PostLists() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/posts`);
+        const response = await fetch(`${API_URL}/api/posts`, {
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -51,14 +57,20 @@ function PostLists() {
   )
 }
 
-function Post() {
+function Post({ user }) {
   const { slug } = useParams();
   const [post, setPost] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/post/${slug}`);
+        const response = await fetch(`${API_URL}/api/post/${slug}`, {
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
         const result = await response.json();
         setPost(result);
       }
@@ -67,13 +79,51 @@ function Post() {
       }
     }
     fetchData();
-  }, [])
+  }, [slug]);
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    const name = e.target.name.value;
+    const text = e.target.text.value;
+    try {
+      const response = await fetch(`${API_URL}/api/post/${slug}/comment`, {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({name, text})
+      });
+      if(response.ok) {
+        const updatedPost = await response.json();
+        setPost(updatedPost);
+        e.target.reset();
+      }
+    }
+    catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  }
 
   const {title, description} = post;
   return (
     <div>
       <h3>{title}</h3>
       <p>{description}</p>
+
+      <p>Comment: </p>
+      <ul>
+        {post.comments && post.comments.map((c, index) => (
+          <li key={index}>{c.name}: {c.text}</li>
+        ))}
+      </ul>
+
+      <form onSubmit={handleCommentSubmit}>
+        <label>Name: <input type="text" name="name"></input></label><br/>
+        <label>Text: <input type="text" name="text"></input></label>
+        <button type="submit">Add comment</button>
+      </form>
     </div>
   )
 }
@@ -88,7 +138,8 @@ function NewPost() {
         method: "POST",
         headers: {
           "Accept": "application/json",
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: post
       });

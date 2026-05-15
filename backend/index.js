@@ -6,7 +6,6 @@ import postRoutes from './routes/post.route.js';
 import userRoutes from './routes/user.route.js';
 
 dotenv.config();
-connectDB();
 
 const app = express();
 app.use(cors());
@@ -18,6 +17,18 @@ app.get('/', (req, res) => {
   res.json({ message: 'Hello from the backend!' });
 })
 
-app.listen(process.env.PORT, () => {
-  console.log(`Backend server is running on http://localhost:${process.env.PORT}`);
-})
+async function startServer() {
+  try {
+    await connectDB();
+
+    app.listen(process.env.PORT, () => {
+      console.log(`Backend server is running on http://localhost:${process.env.PORT}`);
+    });
+  }
+  catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

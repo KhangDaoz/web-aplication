@@ -18,10 +18,14 @@ import Stats from "./Stats";
 import ProtectedRoute from "./ProtectedRoute";
 
 function AppLayout() {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const token = localStorage.getItem("token");
+        return token ? { username: "user" } : null;
+    });
     const navigate = useNavigate();
 
     function logOut() {
+        localStorage.removeItem("token");
         setUser(null);
         navigate("/login");
     }
@@ -43,7 +47,7 @@ function AppLayout() {
                 <Route path="/" element={<Home />} />
                 <Route path="/posts" element={<Posts />} >
                     <Route index element={<PostLists />} />
-                    <Route path=":slug" element={<Post />} />
+                    <Route path=":slug" element={<Post user={user}/>} />
                 </Route>
                 <Route path="/about" element={<About/>} />
                 <Route path="/login" element={<Login onLogin={setUser}/>} />

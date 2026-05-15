@@ -1,5 +1,16 @@
 import mongoose from "mongoose";
 
+const CommentSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, "Please provide name"]
+    },
+    text: {
+        type: String,
+        required: [true, "Please provide comment text"]
+    }
+})
+
 const PostSchema = new mongoose.Schema({
     slug: {
         type: String,
@@ -13,7 +24,8 @@ const PostSchema = new mongoose.Schema({
     description: {
         type: String,
         required: [true, "Please provide a description"]
-    }
+    },
+    comments: [CommentSchema]
 })
 
 const Post = mongoose.model("Post", PostSchema);

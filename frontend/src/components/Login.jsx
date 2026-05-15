@@ -22,6 +22,8 @@ function Login({ onLogin }) {
           body: JSON.stringify(creds),
         });
         if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem("token", data.token);
             onLogin && onLogin({username: creds.username});
             navigate("/stats");
         }

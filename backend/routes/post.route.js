@@ -1,10 +1,11 @@
 import express from 'express';
 import Post from '../models/post.model.js';
 import User from '../models/user.model.js';
+import { verifyToken } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-router.post('/post', async (req, res) => {
+router.post('/post', verifyToken, async (req, res) => {
   const post = new Post(req.body);
   try {
     await post.save();
@@ -16,7 +17,7 @@ router.post('/post', async (req, res) => {
   }
 });
 
-router.get('/posts', async (req, res) => {
+router.get('/posts', verifyToken, async (req, res) => {
     try {
         const posts = await Post.find({});
         res.json(posts);
@@ -27,7 +28,7 @@ router.get('/posts', async (req, res) => {
     }
 });
 
-router.get('/post/:slug', async (req, res) => {
+router.get('/post/:slug', verifyToken, async (req, res) => {
   try {
     const post = await Post.findOne({slug: req.params.slug});
     res.json(post);
@@ -53,7 +54,7 @@ router.patch('/post/:slug', async (req, res) => {
   }
 });
 
-router.delete('/post/:slug', async (req, res) => {
+router.delete('/post/:slug', verifyToken, async (req, res) => {
   try {
     const post = await Post.findOneAndDelete({slug: req.params.slug});
     if(!post)
@@ -66,6 +67,36 @@ router.delete('/post/:slug', async (req, res) => {
   }
 });
 
+router.post('/post/:slug/comment', verifyToken, async (req, res) => {
+  try {
+    const post = await Post.findOne({slug: req.params.slug});
+    if(!post)      
+      return res.status(404).json({ message: 'Post not found' });
+    const comment = {
+      name: req.body.name,
+      text: req.body.text
+    }
+    post.comments.push(comment);
+    await post.save();
+    res.status(201).json(post);
+  }
+  catch (error) {
+    console.error("Error adding comment:", error);
+    res.status(500).json({ message: 'Failed to add comment' });
+  }
+});
 
+router.get('/stats', async (req, res) => {
+  try {
+    const postCount = await Post.countDocuments();
+    const userCount = await User.countDocuments();
+    const users = await User.find({}, 'username');
+    res.json({ postCount, userCount, users });
+  }
+  catch (error) {
+    console.error("Error fetching stats:", error);
+    res.status(500).json({ message: 'Failed to fetch stats' });
+  }
+});
 
 export default router;
